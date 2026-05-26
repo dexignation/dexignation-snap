@@ -1,0 +1,36 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# dexignation-snap .gitignore
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output (Snap bundles)
+dist/
+build/
+*.tsbuildinfo
+
+# MetaMask CLI cache
+.cache/
+
+# Environment
+.env
+.env.local
+
+# Coverage / tests
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

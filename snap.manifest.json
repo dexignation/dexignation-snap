@@ -1,0 +1,31 @@
+{
+  "version": "0.1.0",
+  "description": "Resolve .dex names to chain-specific addresses inside MetaMask. / MetaMask 내에서 .dex 이름을 체인별 주소로 해결.",
+  "proposedName": "DEXignation Name Service",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DEXignation/dexignation-snap.git"
+  },
+  "source": {
+    "shasum": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+    "location": {
+      "npm": {
+        "filePath": "dist/bundle.js",
+        "iconPath": "images/icon.svg",
+        "packageName": "@dexignation/snap",
+        "registry": "https://registry.npmjs.org/"
+      }
+    }
+  },
+  "initialPermissions": {
+    "endowment:rpc": {
+      "dapps": true,
+      "snaps": false
+    },
+    "endowment:network-access": {},
+    "snap_dialog": {},
+    "snap_notify": {}
+  },
+  "platformVersion": "6.7.0",
+  "manifestVersion": "0.1"
+}
