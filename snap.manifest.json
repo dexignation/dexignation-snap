@@ -4,10 +4,10 @@
   "proposedName": "DEXignation",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DEXignation/dexignation-snap.git"
+    "url": "git+https://github.com/DEXignation/dexignation-snap.git"
   },
   "source": {
-    "shasum": "Em5PtNQeAYl3gED9Iq64Yq5L4ETfKGCJvtQTgCRYBsk=",
+    "shasum": "GOu6a+Fmpbe/Q0pfmV6/uT9KBX15fWd3BwokJmPqqFg=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
