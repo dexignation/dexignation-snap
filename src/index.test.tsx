@@ -31,40 +31,4 @@ describe('Dexignation Snap', () => {
     });
   });
 
-  describe('onRpcRequest - method dispatch', () => {
-    it('rejects unknown methods with JSON-RPC code -32601 (Method not found)', async () => {
-      const { request } = await installSnap();
-      const response = await request({ method: 'foo' });
-      expect(response).toRespondWithError({
-        code: -32601,
-        message: expect.any(String),
-        data: expect.objectContaining({ method: 'foo' }),
-        stack: expect.any(String),
-      });
-    });
-
-    it('returns null from test-name-lookup when no params are provided', async () => {
-      const { request } = await installSnap();
-      const response = await request({ method: 'test-name-lookup' });
-      expect(response).toRespondWith(null);
-    });
-
-    it('returns null from test-name-lookup when params is an empty object', async () => {
-      const { request } = await installSnap();
-      const response = await request({
-        method: 'test-name-lookup',
-        params: {},
-      });
-      expect(response).toRespondWith(null);
-    });
-
-    it('returns null from test-name-lookup for an unsupported chain', async () => {
-      const { request } = await installSnap();
-      const response = await request({
-        method: 'test-name-lookup',
-        params: { chainId: 'eip155:43114', domain: 'jay.dex' },
-      });
-      expect(response).toRespondWith(null);
-    });
-  });
 });

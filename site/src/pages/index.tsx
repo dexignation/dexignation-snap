@@ -10,7 +10,6 @@ import {
 import { defaultSnapOrigin } from '../config';
 import {
   useMetaMask,
-  useInvokeSnap,
   useMetaMaskContext,
   useRequestSnap,
 } from '../hooks';
@@ -67,6 +66,13 @@ const CardContainer = styled.div`
   margin-top: 1.5rem;
 `;
 
+const FeatureList = styled.ul`
+  margin: 0;
+  padding-left: 2rem;
+  color: ${({ theme }) => theme.colors.text?.alternative};
+  line-height: 1.6;
+`;
+
 const FieldGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -115,7 +121,7 @@ const ButtonRow = styled.div`
 
 const Output = styled.pre`
   width: 100%;
-  min-height: 26rem;
+  min-height: 16rem;
   overflow: auto;
   background: ${({ theme }) => theme.colors.background?.alternative};
   border: 1px solid ${({ theme }) => theme.colors.border?.default};
@@ -124,7 +130,7 @@ const Output = styled.pre`
   font-family: ${({ theme }) => theme.fonts.code};
   font-size: ${({ theme }) => theme.fontSizes.small};
   line-height: 1.5;
-  margin: 0;
+  margin: 1.6rem 0 0;
   padding: 1.6rem;
   white-space: pre-wrap;
   word-break: break-word;
@@ -148,6 +154,8 @@ const ErrorMessage = styled.div`
   }
 `;
 
+const API_BASE = 'https://www.dexignation.com/api/v1';
+
 const formatResult = (value: unknown) =>
   typeof value === 'string' ? value : JSON.stringify(value, null, 2);
 
@@ -155,33 +163,53 @@ const Index = () => {
   const { error } = useMetaMaskContext();
   const { isFlask, snapsDetected, installedSnap } = useMetaMask();
   const requestSnap = useRequestSnap();
-  const invokeSnap = useInvokeSnap();
-
-  const [chainId, setChainId] = useState('eip155:137');
-  const [domain, setDomain] = useState('jay.dex');
+  const [chainSymbol, setChainSymbol] = useState('POL');
+  const [domain, setDomain] = useState('dwjung.dex');
   const [address, setAddress] = useState(
-    '0x1111111111111111111111111111111111111111',
+    '0x79eB8Af70d4009f68D6d31d9dB9EDc35dE38525D',
   );
-  const [output, setOutput] = useState('Ready.');
+  const [preview, setPreview] = useState('Ready.');
 
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? isFlask
     : snapsDetected;
 
-  const handleResolveDomain = async () => {
-    const result = await invokeSnap({
-      method: 'test-name-lookup',
-      params: { chainId, domain },
-    });
-    setOutput(formatResult(result));
+  const previewDomain = async () => {
+    const response = await fetch(
+      `${API_BASE}/names/${encodeURIComponent(domain)}`,
+    );
+    if (!response.ok) {
+      setPreview(`HTTP ${response.status}`);
+      return;
+    }
+
+    const json = (await response.json()) as {
+      data?: { addresses?: { symbol: string; address: string | null }[] };
+    };
+    const resolvedAddress =
+      json.data?.addresses?.find((entry) => entry.symbol === chainSymbol)
+        ?.address ?? null;
+
+    setPreview(
+      formatResult({
+        domain,
+        symbol: chainSymbol,
+        resolvedAddress,
+        raw: json,
+      }),
+    );
   };
 
-  const handleResolveAddress = async () => {
-    const result = await invokeSnap({
-      method: 'test-name-lookup',
-      params: { chainId, address },
-    });
-    setOutput(formatResult(result));
+  const previewAddress = async () => {
+    const response = await fetch(
+      `${API_BASE}/addresses/${encodeURIComponent(address)}/primary`,
+    );
+    if (!response.ok) {
+      setPreview(`HTTP ${response.status}`);
+      return;
+    }
+
+    setPreview(formatResult(await response.json()));
   };
 
   return (
@@ -190,8 +218,8 @@ const Index = () => {
         <Span>DEXignation</Span> Snap
       </Heading>
       <Subtitle>
-        Install the local MetaMask Flask Snap and verify .dex name resolution
-        against the public DEXignation API.
+        Install DEXignation to let MetaMask resolve .dex domains through its
+        native name lookup flow.
       </Subtitle>
       <CardContainer>
         {error && (
@@ -243,29 +271,38 @@ const Index = () => {
         )}
         <Card
           content={{
-            title: 'Lookup',
+            title: 'What this Snap enables',
+            description: (
+              <FeatureList>
+                <li>.dex forward resolution to chain-specific addresses.</li>
+                <li>Reverse resolution from addresses to primary .dex names.</li>
+                <li>Read-only API access with no keys or transaction signing.</li>
+              </FeatureList>
+            ),
+          }}
+          fullWidth
+        />
+        <Card
+          content={{
+            title: 'API Preview',
             description: (
               <>
                 <FieldGrid>
                   <Label>
-                    Chain
+                    Chain symbol
                     <Select
-                      value={chainId}
-                      onChange={(event) => setChainId(event.target.value)}
+                      value={chainSymbol}
+                      onChange={(event) => setChainSymbol(event.target.value)}
                     >
-                      <option value="eip155:137">Polygon - POL</option>
-                      <option value="eip155:1">Ethereum - ETH</option>
-                      <option value="eip155:10">Optimism - OP</option>
-                      <option value="eip155:56">BNB Chain - BNB</option>
-                      <option value="eip155:8453">Base - BASE</option>
-                      <option value="eip155:42161">Arbitrum - ARB</option>
-                      <option value="bip122:000000000019d6689c085ae165831e93">
-                        Bitcoin - BTC
-                      </option>
-                      <option value="solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp">
-                        Solana - SOL
-                      </option>
-                      <option value="tron:728126428">Tron - TRX</option>
+                      <option value="POL">Polygon - POL</option>
+                      <option value="ETH">Ethereum - ETH</option>
+                      <option value="OP">Optimism - OP</option>
+                      <option value="BNB">BNB Chain - BNB</option>
+                      <option value="BASE">Base - BASE</option>
+                      <option value="ARB">Arbitrum - ARB</option>
+                      <option value="BTC">Bitcoin - BTC</option>
+                      <option value="SOL">Solana - SOL</option>
+                      <option value="TRX">Tron - TRX</option>
                     </Select>
                   </Label>
                   <Label>
@@ -284,31 +321,16 @@ const Index = () => {
                   </Label>
                 </FieldGrid>
                 <ButtonRow>
-                  <button
-                    type="button"
-                    onClick={handleResolveDomain}
-                    disabled={!installedSnap}
-                  >
-                    Resolve Domain
+                  <button type="button" onClick={previewDomain}>
+                    Preview Domain
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleResolveAddress}
-                    disabled={!installedSnap}
-                  >
-                    Resolve Address
+                  <button type="button" onClick={previewAddress}>
+                    Preview Address
                   </button>
                 </ButtonRow>
+                <Output>{preview}</Output>
               </>
             ),
-          }}
-          disabled={!installedSnap}
-          fullWidth
-        />
-        <Card
-          content={{
-            title: 'Result',
-            description: <Output>{output}</Output>,
           }}
           fullWidth
         />

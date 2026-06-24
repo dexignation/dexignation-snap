@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Resolve .dex domains in MetaMask - Dexignation Web3 Name Service.",
   "proposedName": "DEXignation",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "git+https://github.com/DEXignation/dexignation-snap.git"
   },
   "source": {
-    "shasum": "GOu6a+Fmpbe/Q0pfmV6/uT9KBX15fWd3BwokJmPqqFg=",
+    "shasum": "8j+a4lHa8ShMQRSqif5xZoKbrWkJYcd2uiz2ykYRy3Y=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
@@ -18,10 +18,6 @@
     }
   },
   "initialPermissions": {
-    "endowment:rpc": {
-      "dapps": true,
-      "snaps": false
-    },
     "endowment:name-lookup": {
       "chains": [
         "eip155:1",

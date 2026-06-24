@@ -1,6 +1,6 @@
 {
   "name": "@dexignation/snap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Resolve .dex domains in MetaMask - Dexignation Web3 Name Service on Polygon.",
   "keywords": [
     "dexignation",

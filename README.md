@@ -149,11 +149,13 @@ The local Snap ID is:
 local:http://localhost:8080
 ```
 
-From the Gatsby page, install the Snap with MetaMask Flask, then use
-the lookup controls to test domain and address resolution.
+From the Gatsby page, install or reconnect the Snap with MetaMask Flask.
+After installation, MetaMask can call the Snap through its native name
+lookup flow for `.dex` resolution.
 
-Gatsby 페이지에서 MetaMask Flask로 Snap을 설치한 뒤, lookup 컨트롤로
-도메인/주소 해석을 테스트합니다.
+Gatsby 페이지에서 MetaMask Flask로 Snap을 설치하거나 재연결합니다.
+설치 후 MetaMask는 자체 name lookup 흐름을 통해 `.dex` 해석 시 Snap을
+호출할 수 있습니다.
 
 ---
 
@@ -172,110 +174,6 @@ handler behavior and bundled Snap behavior.
 
 `npm test`는 Jest와 `@metamask/snaps-jest`를 사용해 Snap handler 동작과
 번들된 Snap 동작을 검증합니다.
-
----
-
-## Developer RPC / 개발용 RPC
-
-Production name resolution is handled by MetaMask through `onNameLookup`.
-For local development, the Snap also exposes a test RPC method:
-
-운영 name resolution은 MetaMask가 `onNameLookup`을 통해 호출합니다.
-로컬 개발 편의를 위해 Snap은 테스트용 RPC method도 제공합니다.
-
-```javascript
-await window.ethereum.request({
-  method: 'wallet_invokeSnap',
-  params: {
-    snapId: 'local:http://localhost:8080',
-    request: {
-      method: 'test-name-lookup',
-      params: {
-        chainId: 'eip155:137',
-        domain: 'jay.dex',
-      },
-    },
-  },
-});
-```
-
-Reverse lookup:
-
-역방향 해석:
-
-```javascript
-await window.ethereum.request({
-  method: 'wallet_invokeSnap',
-  params: {
-    snapId: 'local:http://localhost:8080',
-    request: {
-      method: 'test-name-lookup',
-      params: {
-        chainId: 'eip155:137',
-        address: '0x1111111111111111111111111111111111111111',
-      },
-    },
-  },
-});
-```
-
-This RPC is intended for development and the local test site.
-
-이 RPC는 개발 및 로컬 테스트 사이트용입니다.
-
----
-
-## Publishing / 배포
-
-The production Snap is distributed through npm as:
-
-운영 Snap은 npm을 통해 다음 ID로 배포됩니다.
-
-```text
-npm:@dexignation/snap
-```
-
-Before publishing:
-
-배포 전:
-
-```bash
-npm run build
-npm run manifest
-npm test
-npm publish --access public
-```
-
-The `snap.manifest.json` `source.shasum` must match the built
-`dist/bundle.js`. `npm run build` and `npm run manifest` keep it in sync.
-
-`snap.manifest.json`의 `source.shasum`은 빌드된 `dist/bundle.js`와
-일치해야 합니다. `npm run build`와 `npm run manifest`로 동기화합니다.
-
-Because this Snap uses MetaMask name lookup permissions, production
-installation in regular MetaMask requires MetaMask allowlist approval.
-Before allowlist approval, local testing should be done with MetaMask
-Flask and `local:http://localhost:8080`.
-
-이 Snap은 MetaMask name lookup 권한을 사용하므로, 일반 MetaMask에서
-운영 설치가 가능하려면 MetaMask allowlist 승인이 필요합니다. 승인 전
-로컬 테스트는 MetaMask Flask와 `local:http://localhost:8080`으로 진행합니다.
-
-For a production install page, configure the site Snap origin as:
-
-운영 설치 페이지에서는 site의 Snap origin을 다음과 같이 설정합니다.
-
-```text
-npm:@dexignation/snap
-```
-
-In development, the default is:
-
-개발 기본값은 다음과 같습니다.
-
-```text
-local:http://localhost:8080
-```
 
 ---
 

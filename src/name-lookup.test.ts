@@ -7,14 +7,12 @@ import {
   jest,
 } from '@jest/globals';
 
-import { onNameLookup, onRpcRequest } from '.';
+import { onNameLookup } from '.';
 import {
   API_BASE,
   API_PATHS,
   CHAIN_TO_SYMBOL,
-  DEFAULT_TEST_CHAIN_ID,
   PROTOCOL_NAME,
-  RPC_METHOD_TEST_NAME_LOOKUP,
 } from './constants';
 
 type CoinAddressEntry = {
@@ -275,76 +273,5 @@ describe('onNameLookup (direct import)', () => {
       expect(response).toBeNull();
       expect(fetchSpy).not.toHaveBeenCalled();
     });
-  });
-});
-
-describe('onRpcRequest (direct import)', () => {
-  let fetchSpy: jest.SpiedFunction<typeof fetch>;
-
-  beforeEach(() => {
-    fetchSpy = jest.spyOn(globalThis, 'fetch');
-  });
-
-  afterEach(() => {
-    fetchSpy.mockRestore();
-  });
-
-  it(`defaults chainId to ${DEFAULT_TEST_CHAIN_ID} when none is provided`, async () => {
-    fetchSpy.mockResolvedValueOnce(
-      okResponse(
-        nameRecord('jay.dex', [
-          { coinType: 60, symbol: 'ETH', address: '0xeth' },
-          { coinType: 2147483785, symbol: 'POL', address: '0xpol' },
-        ]),
-      ),
-    );
-
-    const response = await onRpcRequest({
-      origin: 'test',
-      request: {
-        jsonrpc: '2.0',
-        id: 1,
-        method: RPC_METHOD_TEST_NAME_LOOKUP,
-        params: { domain: 'jay.dex' },
-      },
-    });
-
-    expect(response).toMatchObject({
-      resolvedAddresses: [{ resolvedAddress: '0xpol' }],
-    });
-  });
-
-  it('honors an explicit chainId override (eip155:1 -> ETH)', async () => {
-    fetchSpy.mockResolvedValueOnce(
-      okResponse(
-        nameRecord('jay.dex', [
-          { coinType: 60, symbol: 'ETH', address: '0xeth' },
-          { coinType: 2147483785, symbol: 'POL', address: '0xpol' },
-        ]),
-      ),
-    );
-
-    const response = await onRpcRequest({
-      origin: 'test',
-      request: {
-        jsonrpc: '2.0',
-        id: 2,
-        method: RPC_METHOD_TEST_NAME_LOOKUP,
-        params: { chainId: 'eip155:1', domain: 'jay.dex' },
-      },
-    });
-
-    expect(response).toMatchObject({
-      resolvedAddresses: [{ resolvedAddress: '0xeth' }],
-    });
-  });
-
-  it('throws MethodNotFoundError (-32601) for unknown methods', async () => {
-    await expect(
-      onRpcRequest({
-        origin: 'test',
-        request: { jsonrpc: '2.0', id: 3, method: 'unknown-method' },
-      }),
-    ).rejects.toMatchObject({ code: -32601 });
   });
 });

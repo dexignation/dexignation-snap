@@ -1,16 +1,9 @@
-import type {
-  CaipChainId,
-  OnNameLookupHandler,
-  OnRpcRequestHandler,
-} from '@metamask/snaps-sdk';
-import { MethodNotFoundError } from '@metamask/snaps-sdk';
+import type { OnNameLookupHandler } from '@metamask/snaps-sdk';
 
 import {
   API_BASE,
   API_PATHS,
-  DEFAULT_TEST_CHAIN_ID,
   PROTOCOL_NAME,
-  RPC_METHOD_TEST_NAME_LOOKUP,
   getChainSymbol,
 } from './constants';
 
@@ -95,28 +88,4 @@ export const onNameLookup: OnNameLookupHandler = async ({
   }
 
   return null;
-};
-
-export const onRpcRequest: OnRpcRequestHandler = async ({ request }) => {
-  if (request.method === RPC_METHOD_TEST_NAME_LOOKUP) {
-    const params = (request.params ?? {}) as {
-      chainId?: string;
-      domain?: string;
-      address?: string;
-    };
-
-    const chainId = (params.chainId ?? DEFAULT_TEST_CHAIN_ID) as CaipChainId;
-
-    if (params.domain) {
-      return onNameLookup({ chainId, domain: params.domain });
-    }
-
-    if (params.address) {
-      return onNameLookup({ chainId, address: params.address });
-    }
-
-    return null;
-  }
-
-  throw new MethodNotFoundError({ method: request.method });
 };

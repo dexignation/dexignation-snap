@@ -4,10 +4,6 @@ export const API_BASE = 'https://www.dexignation.com/api/v1';
 
 export const PROTOCOL_NAME = 'DEXignation';
 
-export const RPC_METHOD_TEST_NAME_LOOKUP = 'test-name-lookup';
-
-export const DEFAULT_TEST_CHAIN_ID: CaipChainId = 'eip155:137';
-
 export const API_PATHS = {
   nameByDomain: (domain: string) => `/names/${encodeURIComponent(domain)}`,
   primaryByAddress: (address: string) =>
