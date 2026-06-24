@@ -2,11 +2,11 @@
 
 # dexignation-snap
 
-**MetaMask Snap that resolves `.dex` names inside MetaMask.**
+**MetaMask Snap for resolving DEXignation `.dex` names inside MetaMask.**
 
-MetaMask 내에서 `.dex` 이름을 해결하는 MetaMask Snap.
+MetaMask 내에서 DEXignation `.dex` 이름을 해석하는 MetaMask Snap입니다.
 
-[![Website](https://img.shields.io/badge/Website-dexignation.com-00DC82.svg)](https://dexignation.com)
+[![Website](https://img.shields.io/badge/Website-www.dexignation.com-00DC82.svg)](https://www.dexignation.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![MetaMask Snap](https://img.shields.io/badge/MetaMask-Snap-F6851B.svg)](https://docs.metamask.io/snaps/)
 
@@ -14,80 +14,71 @@ MetaMask 내에서 `.dex` 이름을 해결하는 MetaMask Snap.
 
 ---
 
-## What is a Snap? / Snap이란?
+## Overview / 개요
 
-A **MetaMask Snap** is a sandboxed JavaScript program that extends
-MetaMask's capabilities. Snaps can expose new RPC methods, render UI
-inside the MetaMask popup, and run scheduled background tasks — all
-without modifying MetaMask itself.
+This Snap integrates DEXignation name resolution with MetaMask's Snaps
+name lookup flow. When MetaMask asks the Snap to resolve a `.dex` domain
+or reverse-resolve an address, the Snap calls the public DEXignation API
+and returns the chain-specific result.
 
-**MetaMask Snap**은 MetaMask 기능을 확장하는 샌드박스 JavaScript 프로그램입니다.
-새로운 RPC 메서드 노출, MetaMask 팝업 내 UI 렌더링, 백그라운드 작업을 모두
-MetaMask 본체 수정 없이 수행할 수 있습니다.
+이 Snap은 DEXignation 이름 해석을 MetaMask Snaps의 name lookup 흐름에
+연결합니다. MetaMask가 `.dex` 도메인 해석 또는 주소 역방향 해석을 요청하면,
+Snap은 공개 DEXignation API를 호출하고 현재 체인에 맞는 결과를 반환합니다.
 
-This Snap lets dApps and end-users resolve DEXignation `.dex` names
-directly from MetaMask — no separate library, no API server dependency.
+The Snap is read-only. It does not hold keys, sign transactions, submit
+transactions, or display transaction prompts.
 
-본 Snap은 dApp과 사용자가 DEXignation `.dex` 이름을 MetaMask에서 바로
-해결할 수 있게 합니다 — 별도 라이브러리도, API 서버 의존도 없습니다.
+Snap은 읽기 전용입니다. 키를 보관하지 않고, 트랜잭션에 서명하지 않으며,
+트랜잭션을 전송하거나 트랜잭션 승인 화면을 표시하지 않습니다.
 
 ---
 
-## What it does / 무엇을 하는가
+## What It Does / 기능
 
-Three RPC methods exposed via `wallet_invokeSnap`:
+- Resolves `.dex` domains through MetaMask's `onNameLookup` handler.
+- Returns only the address registered for the requested chain symbol.
+- Reverse-resolves an address to its primary `.dex` domain when configured.
+- Ignores unsupported chains and unavailable records by returning `null`.
+- Uses `https://www.dexignation.com/api/v1`.
 
-`wallet_invokeSnap`을 통해 노출되는 RPC 메서드 3개:
+- MetaMask의 `onNameLookup` handler를 통해 `.dex` 도메인을 해석합니다.
+- 요청된 체인 심볼에 등록된 주소만 반환합니다.
+- 설정된 경우 주소를 primary `.dex` 도메인으로 역방향 해석합니다.
+- 지원하지 않는 체인이나 없는 레코드는 `null`을 반환합니다.
+- `https://www.dexignation.com/api/v1`을 사용합니다.
 
-### 1. `resolve` — name → addresses
+Supported chains / 지원 체인:
 
-```javascript
-const result = await window.ethereum.request({
-  method: "wallet_invokeSnap",
-  params: {
-    snapId: "npm:@dexignation/snap",
-    request: {
-      method: "resolve",
-      params: { name: "alice.dex" },
-    },
-  },
-});
-// {
-//   name: "alice.dex",
-//   node: "0x...",
-//   owner: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
-//   expired: false,
-//   addresses: { polygon: "0x71C7...", ethereum: "0xA1B2..." }
-// }
+| CAIP-2 Chain ID | Symbol |
+|---|---|
+| `eip155:1` | `ETH` |
+| `eip155:10` | `OP` |
+| `eip155:56` | `BNB` |
+| `eip155:137` | `POL` |
+| `eip155:8453` | `BASE` |
+| `eip155:42161` | `ARB` |
+| `bip122:000000000019d6689c085ae165831e93` | `BTC` |
+| `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `SOL` |
+| `tron:728126428` | `TRX` |
+
+---
+
+## Repository Layout / 저장소 구조
+
+```text
+src/                 Snap source
+site/                Gatsby install/test page for MetaMask Flask
+snap.manifest.json   Snap manifest
+snap.config.ts       MetaMask Snaps CLI config
+images/              Snap icon assets
 ```
 
-### 2. `reverseResolve` — address → name
-
-```javascript
-const { name } = await window.ethereum.request({
-  method: "wallet_invokeSnap",
-  params: {
-    snapId: "npm:@dexignation/snap",
-    request: {
-      method: "reverseResolve",
-      params: { address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F" },
-    },
-  },
-});
-// "alice.dex"
-```
-
-### 3. `info` — Snap & network metadata
-
-```javascript
-const info = await window.ethereum.request({
-  method: "wallet_invokeSnap",
-  params: {
-    snapId: "npm:@dexignation/snap",
-    request: { method: "info" },
-  },
-});
-// { version: "0.1.0", network: {...}, supportedNetworks: [...] }
+```text
+src/                 Snap 소스
+site/                MetaMask Flask 설치/테스트용 Gatsby 페이지
+snap.manifest.json   Snap manifest
+snap.config.ts       MetaMask Snaps CLI 설정
+images/              Snap 아이콘 자산
 ```
 
 ---
@@ -97,90 +88,215 @@ const info = await window.ethereum.request({
 ### Prerequisites / 사전 요구사항
 
 - Node.js v22+
-- [MetaMask Flask](https://metamask.io/flask/) (the developer build of
-  MetaMask that supports custom Snaps)
+- npm
+- [MetaMask Flask](https://metamask.io/flask/) for local Snap testing
 
-### Quick start / 빠른 시작
+- Node.js v22+
+- npm
+- 로컬 Snap 테스트용 [MetaMask Flask](https://metamask.io/flask/)
+
+### Install / 설치
 
 ```bash
-git clone https://github.com/DEXignation/dexignation-snap
-cd dexignation-snap
 npm install
+npm --prefix site install
+```
+
+### Run Locally / 로컬 실행
+
+Use two terminals.
+
+터미널 2개를 사용합니다.
+
+Terminal 1: serve the Snap manifest and bundle.
+
+터미널 1: Snap manifest와 bundle을 제공합니다.
+
+```bash
 npm run build
-npm run serve     # serves the bundle at http://localhost:8080
+npm run serve
 ```
 
-Then in MetaMask Flask, install the local Snap from
-`http://localhost:8080`.
+This serves Snap files from `http://localhost:8080`.
+The root URL may return `404`; that is expected. MetaMask reads
+`/snap.manifest.json` and `/dist/bundle.js`.
 
-이후 MetaMask Flask에서 `http://localhost:8080`의 로컬 Snap을 설치하세요.
+이 명령은 `http://localhost:8080`에서 Snap 파일을 제공합니다.
+루트 URL이 `404`를 반환해도 정상입니다. MetaMask는
+`/snap.manifest.json`과 `/dist/bundle.js`를 읽습니다.
 
-### Watch mode / 워치 모드
+Terminal 2: run the Gatsby install/test site.
+
+터미널 2: Gatsby 설치/테스트 사이트를 실행합니다.
 
 ```bash
-npm run watch
+npm run site
 ```
 
-Re-bundles on file change. Re-install in Flask to pick up the new
-bundle.
+Open:
 
-파일 변경 시 자동 재번들. Flask에서 재설치하여 새 번들 적용.
+브라우저에서 엽니다.
 
-### Tests / 테스트
-
-```bash
-npm test
+```text
+http://localhost:8081/
 ```
+
+The local Snap ID is:
+
+로컬 Snap ID는 다음과 같습니다.
+
+```text
+local:http://localhost:8080
+```
+
+From the Gatsby page, install the Snap with MetaMask Flask, then use
+the lookup controls to test domain and address resolution.
+
+Gatsby 페이지에서 MetaMask Flask로 Snap을 설치한 뒤, lookup 컨트롤로
+도메인/주소 해석을 테스트합니다.
 
 ---
 
-## Configuration / 설정
+## Testing / 테스트
 
-Contract addresses are bundled at build time. To point the Snap at a
-different deployment:
+```bash
+npm run lint
+npm test
+npm run build
+npm --prefix site run lint
+npm --prefix site run build
+```
 
-컨트랙트 주소는 빌드 시점에 번들됩니다. 다른 배포본을 가리키려면:
+`npm test` uses Jest and `@metamask/snaps-jest` to verify the Snap
+handler behavior and bundled Snap behavior.
 
-1. Edit `src/config.ts` — fill in `registryAddress` and `resolverAddress`
-   for the target network.
-2. `npm run build`.
-3. Re-publish to npm (or re-install locally for development).
+`npm test`는 Jest와 `@metamask/snaps-jest`를 사용해 Snap handler 동작과
+번들된 Snap 동작을 검증합니다.
+
+---
+
+## Developer RPC / 개발용 RPC
+
+Production name resolution is handled by MetaMask through `onNameLookup`.
+For local development, the Snap also exposes a test RPC method:
+
+운영 name resolution은 MetaMask가 `onNameLookup`을 통해 호출합니다.
+로컬 개발 편의를 위해 Snap은 테스트용 RPC method도 제공합니다.
+
+```javascript
+await window.ethereum.request({
+  method: 'wallet_invokeSnap',
+  params: {
+    snapId: 'local:http://localhost:8080',
+    request: {
+      method: 'test-name-lookup',
+      params: {
+        chainId: 'eip155:137',
+        domain: 'jay.dex',
+      },
+    },
+  },
+});
+```
+
+Reverse lookup:
+
+역방향 해석:
+
+```javascript
+await window.ethereum.request({
+  method: 'wallet_invokeSnap',
+  params: {
+    snapId: 'local:http://localhost:8080',
+    request: {
+      method: 'test-name-lookup',
+      params: {
+        chainId: 'eip155:137',
+        address: '0x1111111111111111111111111111111111111111',
+      },
+    },
+  },
+});
+```
+
+This RPC is intended for development and the local test site.
+
+이 RPC는 개발 및 로컬 테스트 사이트용입니다.
 
 ---
 
 ## Publishing / 배포
 
-The Snap is distributed via npm under `@dexignation/snap`. To publish:
+The production Snap is distributed through npm as:
 
-Snap은 `@dexignation/snap` 이름으로 npm에 배포됩니다.
+운영 Snap은 npm을 통해 다음 ID로 배포됩니다.
+
+```text
+npm:@dexignation/snap
+```
+
+Before publishing:
+
+배포 전:
 
 ```bash
 npm run build
-npm run manifest    # auto-fixes the manifest shasum
+npm run manifest
+npm test
 npm publish --access public
 ```
 
-The `snap.manifest.json` `shasum` field must match the built bundle.
-`mm-snap manifest --fix` regenerates it.
+The `snap.manifest.json` `source.shasum` must match the built
+`dist/bundle.js`. `npm run build` and `npm run manifest` keep it in sync.
 
-`snap.manifest.json`의 `shasum` 필드는 빌드된 번들과 일치해야 합니다.
-`mm-snap manifest --fix`로 자동 갱신됩니다.
+`snap.manifest.json`의 `source.shasum`은 빌드된 `dist/bundle.js`와
+일치해야 합니다. `npm run build`와 `npm run manifest`로 동기화합니다.
+
+Because this Snap uses MetaMask name lookup permissions, production
+installation in regular MetaMask requires MetaMask allowlist approval.
+Before allowlist approval, local testing should be done with MetaMask
+Flask and `local:http://localhost:8080`.
+
+이 Snap은 MetaMask name lookup 권한을 사용하므로, 일반 MetaMask에서
+운영 설치가 가능하려면 MetaMask allowlist 승인이 필요합니다. 승인 전
+로컬 테스트는 MetaMask Flask와 `local:http://localhost:8080`으로 진행합니다.
+
+For a production install page, configure the site Snap origin as:
+
+운영 설치 페이지에서는 site의 Snap origin을 다음과 같이 설정합니다.
+
+```text
+npm:@dexignation/snap
+```
+
+In development, the default is:
+
+개발 기본값은 다음과 같습니다.
+
+```text
+local:http://localhost:8080
+```
 
 ---
 
 ## Security / 보안
 
-- The Snap holds **no keys** and signs **no transactions**.
-- It performs **read-only** chain calls via a public RPC endpoint.
-- All input is validated before being sent to the chain.
-- See [`SECURITY.md`](./SECURITY.md).
+- The Snap holds no private keys.
+- The Snap does not sign or submit transactions.
+- The Snap performs read-only HTTPS requests to the public DEXignation API.
+- The Snap returns `null` for unsupported chains, unavailable records, or
+  API failures.
 
-키 보관 없음, 트랜잭션 서명 없음. 공용 RPC를 통한 **읽기 전용** 호출만
-수행. 모든 입력은 체인 전송 전에 검증.
+- Snap은 private key를 보관하지 않습니다.
+- Snap은 트랜잭션에 서명하거나 트랜잭션을 전송하지 않습니다.
+- Snap은 공개 DEXignation API에 읽기 전용 HTTPS 요청만 수행합니다.
+- 지원하지 않는 체인, 없는 레코드, API 실패 시 `null`을 반환합니다.
+
+See [`SECURITY.md`](./SECURITY.md).
 
 ---
 
-## Related repositories / 관련 저장소
+## Related Repositories / 관련 저장소
 
 | Repo | Purpose |
 |---|---|

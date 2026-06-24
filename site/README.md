@@ -1,43 +1,60 @@
-# TypeScript Example Snap Front-end
+# DEXignation Snap Site
 
-This project was bootstrapped with [Gatsby](https://www.gatsbyjs.com/).
+Gatsby install and test page for the DEXignation MetaMask Snap.
 
-## Available Scripts
+DEXignation MetaMask Snap 설치 및 테스트를 위한 Gatsby 페이지입니다.
 
-In the project directory, you can run:
+## Development / 개발
 
-### `yarn start`
+Run the Snap server and the Gatsby site in separate terminals.
 
-Runs the app in the development mode.\
-Open [http://localhost:8000](http://localhost:8000) to view it in the browser.
+Snap 서버와 Gatsby site를 각각 별도 터미널에서 실행합니다.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+npm run build
+npm run serve
+```
 
-### `yarn build`
+```bash
+npm run site
+```
 
-Builds the app for production to the `public` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Open:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+브라우저에서 엽니다.
 
-See the section about [deployment](https://www.gatsbyjs.com/docs/how-to/previews-deploys-hosting/) for more information.
+```text
+http://localhost:8081/
+```
 
-## Environment variables
+The local Snap origin defaults to:
 
-Gatsby has built-in support for loading environment variables into the browser and Functions. Loading environment variables into Node.js requires a small code snippet.
+로컬 Snap origin 기본값:
 
-In development, Gatsby will load environment variables from a file named `.env.development`. For builds, it will load from `.env.production`.
+```text
+local:http://localhost:8080
+```
 
-By default you can use the `SNAP_ORIGIN` variable (used in `src/config/snap.ts`) to define a production origin for you snap (eg. `npm:MyPackageName`). If not defined it will defaults to `local:http://localhost:8080`.
+## Production Origin / 운영 Origin
 
-A `.env` file template is available, to use it rename `.env.production.dist` to `.env.production`
+For a production install page, set `SNAP_ORIGIN` to the npm Snap ID.
 
-To learn more visit [Gatsby documentation](https://www.gatsbyjs.com/docs/how-to/local-development/environment-variables/)
+운영 설치 페이지에서는 `SNAP_ORIGIN`을 npm Snap ID로 설정합니다.
 
-## Learn More
+```text
+SNAP_ORIGIN=npm:@dexignation/snap
+```
 
-You can learn more in the [Gatsby documentation](https://www.gatsbyjs.com/docs/).
+The Snap must be published to npm and allowlisted by MetaMask before
+regular MetaMask users can install it in production.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+일반 MetaMask 사용자가 운영 환경에서 설치하려면 Snap이 npm에 배포되어 있고
+MetaMask allowlist 승인을 받아야 합니다.
+
+## Scripts / 스크립트
+
+```bash
+npm --prefix site run start
+npm --prefix site run build
+npm --prefix site run lint
+```
