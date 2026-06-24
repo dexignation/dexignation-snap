@@ -1,23 +1,13 @@
-// SPDX-License-Identifier: MIT
-//
-// MetaMask Snap CLI configuration.
-// MetaMask Snap CLI 설정.
-
-import type { SnapConfig } from "@metamask/snaps-cli";
+import type { SnapConfig } from '@metamask/snaps-cli';
+import { resolve } from 'path';
 
 const config: SnapConfig = {
-  bundler: "webpack",
-  input: "./src/index.ts",
+  input: resolve(__dirname, 'src/index.tsx'),
   server: {
     port: 8080,
   },
   polyfills: {
     buffer: true,
-  },
-  stats: {
-    builtIns: {
-      ignore: ["events"],
-    },
   },
 };
 
